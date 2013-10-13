@@ -1,0 +1,98 @@
+	http://www.ibm.com/developerworks/library/j-grails06099/
+	http://grails.org/Simple+Avatar+Uploader
+	http://localhost:8080/RandomWallpaper/entry
+	http://www.ibm.com/developerworks/java/library/j-grails06099/index.html
+	
+	def scaffold = true
+	
+    static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
+	
+	def downloadFromURLService
+	
+	def download(){
+		def result = downloadFromURLService.download("http://wpolityce.pl/site_media/media/cache/44/c9/44c9fcf4d8e3a3da8d4ece7a807549d9.jpg")
+		render result 
+	}
+	
+	def downloadFile() {	
+		def file = new File("pictures/xxx.jpg")  
+		response.setContentType("image/jpeg")
+		response.setHeader("Content-disposition", "attachment;filename=xxx.jpg")
+		response.outputStream << file.newInputStream()
+	}
+	
+	//def xxxService
+	def test() {
+		/*def entry = new Entry()
+		entry.url = "http://p3.sfora.plkkkk/d9295fcebe349671ce64c35e5bfe2b8f.jpg"
+		entry = downloadFromURLService.downloadPicture(entry)
+		
+		if (entry == null){
+			render "entry null"
+			return
+		}
+		entry.save()
+		render entry*/
+		
+	}
+	
+	def uploadPicture() {
+		
+		def entry = new Entry(params)
+		
+		if (entry.hasErrors()) {
+			render view:'/main'  //TO DO errors....
+			return
+		}
+		
+		def uploadedFile = request.getFile('picture')
+		
+		if(!uploadedFile.empty){
+			entry.pictureType = uploadedFile.getContentType()
+			
+			assert entry.pictureType == "image/jpeg"
+			
+			def mimePicture = ['image/png', 'image/jpeg', 'image/gif']
+			if (!mimePicture.contains(entry.pictureType)) {
+			  flash.message = "Picture must be one of: ${okcontents}"
+			  render(view:'/main') //, model:[user:user]
+			  return
+			}
+			entry.picture = uploadedFile.getBytes()
+
+			// Validation works, will check if the image is too big
+			if (!entry.save()) {
+				flash.message = "Could not save, file to big (1MB limit)"
+				render(view:'/main')
+			  return
+			}
+			flash.message = "Picture (${entry.pictureType}, ${entry.picture.size()} bytes) uploaded."
+			render(view:'/main')
+		} else if (params.url){
+			entry.url = params.url
+			entry = downloadFromURLService.downloadPicture(entry)
+			if (entry == null){
+				render "entry null"
+				return
+			}
+			if (!entry.save()) {
+				flash.message = "Could not save, file to big (1MB limit)"
+				render(view:'/main')
+			  return
+			}
+			flash.message = "Picture (${entry.pictureType}, ${entry.picture.size()} bytes) uploaded."
+			render(view:'/main')
+		}
+		
+	}
+	/*	if(!uploadedFile.empty){
+		  println "Class: ${uploadedFile.class}"
+		  println "Name: ${uploadedFile.name}"
+		  println "OriginalFileName: ${uploadedFile.originalFilename}"
+		  println "Size: ${uploadedFile.size}"
+		  println "ContentType: ${uploadedFile.contentType}"
+		}
+		render view: "/main"
+		return;
+*/
+	
